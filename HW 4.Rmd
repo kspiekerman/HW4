@@ -1,0 +1,306 @@
+---
+title: "HW 4"
+author: "Kate Spiekerman, kls5665"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r global_options, echo=FALSE}
+knitr::opts_chunk$set(fig.height=4, fig.width=5, warning=FALSE, tidy=TRUE, tidy.opts=list(width.cutoff=60))
+```
+
+```{r, echo=FALSE, message=FALSE}
+gas <- read.csv('gasprices.csv')
+
+library(tidyverse)
+library(ggplot2)
+library(mosaic)
+```
+
+
+## **Question 1**
+
+**Theory A**
+
+Claim- Gas stations charge more if they lack direct competition in sight
+
+```{r, echo=FALSE}
+competition <- gas %>%
+  filter(Competitors == 'Y')
+no_competition <- gas%>%
+  filter(Competitors == 'N')
+
+boxplot(gas$Price~gas$Competitors, main='Distribution of Gas Prices',ylab='Price',xlab='Competition',names=c('No','Yes'), col=c('#a8ddb5','#43a2ca'))
+
+boot_comp <- do(10000)*mean(~Price, data=mosaic::resample(competition))
+boot_comp %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_comp, level = .95)
+
+boot_no_comp <- do(10000)*mean(~Price, data=mosaic::resample(no_competition))
+boot_no_comp %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_no_comp, level = .95)
+
+```
+Evidence- The confidence interval for the gas stations with competition was (1.8326, 1.873) and the confidence interval for the gas stations with no competition was (1.8527, 1.8996). 
+
+Conclusion- Based on the data, I would not agree with the theory that gas stations without competition charge more than those with it.
+
+
+**Theory B**
+
+Claim- The richer the area, the higher the gas prices.
+
+```{r, echo=FALSE}
+ggplot(gas) + 
+  geom_point(aes(x=Income, y=Price))
+
+cor(gas$Income, gas$Price)
+
+```
+
+Evidence- There is a slight positive linear correlation between richer areas and higher gas prices. 
+
+Conclusion- Based on the data, I would agree with the theory that richer areas have higher gas prices. 
+
+
+**Theory C**
+
+Claim- Gas stations at stoplights charge more.
+
+```{r, echo=FALSE}
+stoplight <- gas %>%
+  filter(Stoplight == 'Y')
+no_stoplight <- gas%>%
+  filter(Stoplight == 'N')
+
+boxplot(gas$Price~gas$Stoplight, main='Distribution of Gas Prices',ylab='Price',xlab='Stoplights',names=c('No','Yes'), col=c('#a8ddb5','#43a2ca'))
+
+boot_light <- do(10000)*mean(~Price, data=mosaic::resample(stoplight))
+boot_light %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_light, level = .95)
+
+boot_no_light <- do(10000)*mean(~Price, data=mosaic::resample(no_stoplight))
+boot_no_light %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_no_light, level = .95)
+
+```
+Evidence- The confidence interval for the gas stations with competition was (1.8446, 1.8817) and the confidence interval for the gas stations with no competition was (1.8387, 1.8963).
+
+Conclusion- Based on the data, I would not agree with the theory that gas stations near a stoplight charge more than those not near a stoplight. 
+
+
+**Theory D**
+
+Claim- Gas stations with direct highway access charge more
+
+```{r, echo=FALSE}
+highway <- gas %>%
+  filter(Highway == 'Y')
+no_highway <- gas%>%
+  filter(Highway == 'N')
+
+boxplot(gas$Price~gas$Highway, main='Distribution of Gas Prices',ylab='Price',xlab='Highway',names=c('No','Yes'), col=c('#a8ddb5','#43a2ca'))
+
+boot_highway <- do(10000)*mean(~Price, data=mosaic::resample(highway))
+boot_highway %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_highway, level = .95)
+
+boot_no_highway <- do(10000)*mean(~Price, data=mosaic::resample(no_highway))
+boot_no_highway %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_no_highway, level = .95)
+
+```
+Evidence- The confidence interval for the gas stations near a highway was (1.8695, 1.9304) and the confidence interval for the gas stations with no competition was (1.8367, 1.8724).
+
+Conclusion- Based on the data, I would agree with the theory that gas stations near a highway charge more than those not near a highway.
+
+
+**Theory E**
+
+Claim- Shell charges more than all other non-Shell brands.
+
+```{r, echo=FALSE}
+shell <- gas %>%
+  filter(Brand == 'Shell')
+no_shell <- gas%>%
+  filter(Brand != 'Shell')
+
+boxplot(gas$Price~gas$Brand, main='Distribution of Gas Prices',ylab='Price',xlab='Brand')
+
+boot_shell <- do(10000)*mean(~Price, data=mosaic::resample(shell))
+boot_shell %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_shell, level = .95)
+
+boot_no_shell <- do(10000)*mean(~Price, data=mosaic::resample(no_shell))
+boot_no_shell %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_no_shell, level = .95)
+```
+Evidence- The confidence interval for the gas stations with competition was (1.8517, 1.9166) and the confidence interval for the gas stations with no competition was (1.8391, 1.8741).
+
+Conclusion- Based on the data, I would not agree with the theory that shell gas stations charge more than non shell gas station. 
+
+
+## **Problem 2**
+
+**Part A**
+
+```{r}
+cars <- read.csv('sclass.csv')
+
+car_1 <- cars%>%
+  filter(year == 2011 & trim == "63 AMG")
+
+boxplot(car_1$mileage, main='Distribution of Gas Prices',ylab='Price')
+
+boot_car_1 <- do(10000)*mean(~mileage, data=mosaic::resample(car_1))
+boot_car_1 %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_car_1, level = .95)
+
+
+```
+The confidence interval for cars made in 2011 and 63 AMG trim was (26211.28, 31785.95), with the point estimate being 29339.07.  
+
+
+
+**Part B**
+
+```{r}
+car_2 <- mutate(cars, isBlack = ifelse(color == 'Black', TRUE, FALSE))
+car_black <- filter(car_2, year == 2014 & trim == '550')
+
+
+
+```
+
+The confidence interval for cars made in 2014 and 550 trim was . 
+
+
+## **Problem 3**
+
+```{r}
+nbc <- read.csv('nbc_pilotsurvey.csv')
+
+```
+
+**Part A**
+
+Question- Which show has a higher happy rating, Living with Ed or My Name is Earl?
+
+Approach- Take a bootstrap sample of each and compare them. 
+
+```{r}
+ed <- nbc%>%
+  filter(Show == "Living with Ed" )
+         
+earl <- nbc%>%
+  filter(Show == "My Name is Earl")
+
+boot_earl <- do(10000)*mean(~Q1_Happy, data=mosaic::resample(earl))
+boot_earl %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_earl, level = .95)
+
+boot_ed <- do(10000)*mean(~Q1_Happy, data=mosaic::resample(ed))
+boot_ed %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_ed, level = .95)
+```
+
+Results- The confidence interval for happiness for Living with Ed was (3.7106, 3.9489) and the confidence interval for My Name is Earl was (3.7195, 4.1341).
+
+Conclusion- In conclusion, the intervals happiness rating for Living with Ed is slightly lower than the happiness rating for My Name is Earl. 
+
+**Part B**
+
+Question- Which show has a higher annoyed rating, The Biggest Loser or The Apprentice: Los Angeles? 
+
+Approach- Take a bootstrap sample of each and compare them.
+
+```{r}
+loser <- nbc%>%
+  filter(Show == "The Biggest Loser")
+
+la <- nbc%>%
+  filter(Show == "The Apprentice: Los Angeles")
+
+boot_loser <- do(10000)*mean(~Q1_Annoyed, data=mosaic::resample(loser))
+boot_loser %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_loser, level = .95)
+
+boot_la <- do(10000)*mean(~Q1_Annoyed, data=mosaic::resample(la))
+boot_la %>%
+  summarise(standard_error = sd(mean))
+
+confint(boot_la, level = .95)
+```
+
+Results- The confidence interval for annoyed for The Biggest Loser was (1.8623, 2.2174) and the confidence interval for The Apprentice: Los Angeles was (3.7195, 4.1341). 
+
+Conclusion- In conclusion, the intervals for annoyed rating for The Biggest Loser is significantly lower than the annoyed rating for The Apprentice: Los Angeles. 
+
+**Part C**
+
+Question- What proportion of viewers find the show, Dancing with the Stars, confusing to understand. 
+
+Approach- Take a proportion bootstrap of the proportion of viewers who thought the show was confusing. 
+
+```{r}
+dancing <- nbc%>%
+  filter(Show == "Dancing with the Stars")
+
+```
+
+Results- 
+
+Conclusion-
+
+
+## **Problem 4**
+
+```{r, echo=FALSE, results= 'hide'}
+ebay <- read.csv('ebay.csv')
+
+ebay_2 <- ebay%>%
+  mutate(Ratio = rev_after/rev_before)
+
+boot_ebay = do(10000) * diffmean(Ratio ~ adwords_pause, data = mosaic::resample(ebay_2))
+confint(boot_ebay, level = .95)
+
+```
+
+Question- What is the difference between the ratios of the treatment and control group.
+
+Approach- I added a column, ratio, to the data set. Then I bootstrapped the average difference in the average ratios for the control and the treatment group. 
+
+Results- With the 95% confidence interval, the difference between the two means is between -.091 and -.013.
+
+Conclusion- The interval does not contain zero so it is considered statistically significant. 
+
+
+
+
+
